@@ -427,10 +427,10 @@ describe('GET /api/admin/reports/monthly (AC-39)', () => {
     await mkHeld('2026-10-31T22:30:00Z', ['ATTENDED', 'ATTENDED']); // 2026-11-01 00:30 Sofia: November
     await mkHeld('2026-10-15T15:00:00Z', ['ATTENDED'], 'CANCELLED'); // cancelled: not held
     await mkHeld('2026-10-16T15:00:00Z', ['CANCELLED']); // held, nobody attended
-    await mkCard(a.user.id, 'SINGLE', { validFrom: '2026-10-05' });
-    await mkCard(a.user.id, 'PACK_8', { validFrom: '2026-10-31' });
-    await mkCard(b.user.id, 'PACK_8', { validFrom: '2026-10-31' });
-    await mkCard(b.user.id, 'PACK_8', { validFrom: '2026-11-01' });
+    await mkCard(a.user.id, 'SINGLE', { createdAt: new Date('2026-10-05T10:00:00Z') });
+    await mkCard(a.user.id, 'PACK_8', { createdAt: new Date('2026-10-31T21:30:00Z') });
+    await mkCard(b.user.id, 'PACK_8', { createdAt: new Date('2026-09-30T21:30:00Z') });
+    await mkCard(b.user.id, 'PACK_8', { createdAt: new Date('2026-10-31T22:30:00Z') });
     const res = await env.api().get('/api/admin/reports/monthly?month=2026-10').set(admin.auth);
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
