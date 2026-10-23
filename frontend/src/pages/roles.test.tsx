@@ -57,6 +57,7 @@ describe('client pages', () => {
     await waitFor(() => expect(calls).toContain('DELETE /api/me'));
     expect(await screen.findByRole('heading', { name: 'Вход' })).toBeInTheDocument();
     expect(localStorage.getItem('sb_token')).toBeNull();
+    expect(await screen.findByText('Профилът е изтрит.')).toBeInTheDocument();
   });
 
   it('AC-4: profile edit is saved', async () => {

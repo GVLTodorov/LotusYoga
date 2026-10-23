@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { homePath, useAuth } from '../auth/AuthContext';
 import { Button, ErrorBox, Field, Notice, PageTitle } from '../components/ui';
 import { useI18n } from '../i18n';
@@ -8,7 +8,15 @@ export default function LoginPage() {
   const { t, err } = useI18n();
   const { login } = useAuth();
   const nav = useNavigate();
-  const loc = useLocation();
+  const [deleted] = useState(() => {
+    try {
+      const v = sessionStorage.getItem('sb_deleted') === '1';
+      sessionStorage.removeItem('sb_deleted');
+      return v;
+    } catch {
+      return false;
+    }
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<unknown>(null);
@@ -30,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <PageTitle>{t('auth.loginTitle')}</PageTitle>
-      {(loc.state as { deleted?: boolean } | null)?.deleted && <div className="mb-4"><Notice>{t('account.deleted')}</Notice></div>}
+      {deleted && <div className="mb-4"><Notice>{t('account.deleted')}</Notice></div>}
       <form onSubmit={submit} className="flex flex-col gap-4">
         <Field label={t('common.email')} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <Field label={t('common.password')} type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />

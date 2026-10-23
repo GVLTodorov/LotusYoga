@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { Button, Card, ErrorBox, Field, Modal, Notice, PageTitle, Select } from '../components/ui';
@@ -9,7 +9,6 @@ import type { Lang } from '../api/types';
 export default function AccountPage() {
   const { t, lang, err } = useI18n();
   const { user, updateProfile, changeLang, logout } = useAuth();
-  const nav = useNavigate();
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [error, setError] = useState<unknown>(null);
@@ -38,8 +37,8 @@ export default function AccountPage() {
     setDelError(null);
     try {
       await api.deleteMe(pw);
+      try { sessionStorage.setItem('sb_deleted', '1'); } catch { /* ignore */ }
       logout();
-      nav('/login', { replace: true, state: { deleted: true } });
     } catch (x) {
       setDelError(x);
       setBusy(false);
