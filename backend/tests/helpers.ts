@@ -93,7 +93,7 @@ export async function mkSession(
 export async function mkCard(
   userId: string,
   type: 'SINGLE' | 'PACK_8' | 'PACK_12' | 'UNLIMITED_MONTH' = 'PACK_8',
-  extra: Partial<{ used: number; validFrom: string; expiresAt: Date }> = {},
+  extra: Partial<{ used: number; validFrom: string; expiresAt: Date; createdAt: Date }> = {},
 ) {
   const total = { SINGLE: 1, PACK_8: 8, PACK_12: 12, UNLIMITED_MONTH: null }[type];
   const validFrom = extra.validFrom ?? sofiaDate(T0);
@@ -103,6 +103,7 @@ export async function mkCard(
       type,
       totalClasses: total,
       usedClasses: extra.used ?? 0,
+      ...(extra.createdAt ? { createdAt: extra.createdAt } : {}),
       validFrom,
       expiresAt: extra.expiresAt ?? cardExpiry(validFrom, type),
       paymentMethod: 'CASH',

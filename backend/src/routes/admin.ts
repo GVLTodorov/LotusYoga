@@ -202,7 +202,7 @@ export function adminRoutes(app: FastifyInstance, ctx: Ctx) {
       ctx.prisma.booking.count({ where: { status: 'NO_SHOW', session: held } }),
       ctx.prisma.card.groupBy({
         by: ['type'],
-        where: { validFrom: { gte: `${month}-01`, lte: `${month}-31` } },
+        where: { createdAt: { gte: start, lt: end } },
         _count: { _all: true },
       }),
     ]);
