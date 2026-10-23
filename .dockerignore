@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/build
+**/coverage
+.git
+.github
+.vscode
+.claude
+docs
+e2e
+*.md
+**/.env.development
+**/.env.test
+**/.env.*.local
+Dockerfile*
+docker-compose*.yml
