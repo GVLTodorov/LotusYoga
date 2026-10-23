@@ -90,7 +90,7 @@ jobs:
           npx --prefix e2e playwright install --with-deps chromium
       - name: Start stack (app + Postgres + Mailpit)
         if: steps.has.outputs.found == 'true'
-        run: docker compose up -d --build --wait
+        run: docker compose --env-file .env.compose.dev up -d --build --wait
       - name: Run e2e
         if: steps.has.outputs.found == 'true'
         run: npx --prefix e2e playwright test --reporter=line
