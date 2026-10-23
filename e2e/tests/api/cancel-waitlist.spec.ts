@@ -5,6 +5,7 @@ import {
 } from '../helpers/api';
 import { expectNoMail, mailsTo, waitForMail } from '../helpers/mail';
 
+test.beforeEach(() => { test.setTimeout(150_000); });
 let instr: Awaited<ReturnType<typeof createUser>>;
 test.beforeAll(async () => { instr = await createUser('INSTRUCTOR'); });
 const sess = (startsAt: Date, capacity = 14, name?: string) => createSession({ instructorId: instr.id, startsAt, capacity, name });

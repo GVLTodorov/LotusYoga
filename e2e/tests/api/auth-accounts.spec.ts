@@ -157,8 +157,8 @@ test.describe('AC-44 role checks on protected endpoints', () => {
       ['GET', '/api/admin/sessions/x/attendees'], ['POST', '/api/admin/sessions'], ['POST', '/api/admin/templates'],
     ];
     for (const [m, p] of adminOnly) {
-      expect((await call(m, p, { token: client.token, body: {} })).status, `client ${m} ${p}`).toBe(403);
-      expect((await call(m, p, { token: instr.token, body: {} })).status, `instructor ${m} ${p}`).toBe(403);
+      expect((await call(m, p, { token: client.token, ...(m === 'GET' ? {} : { body: {} }) })).status, `client ${m} ${p}`).toBe(403);
+      expect((await call(m, p, { token: instr.token, ...(m === 'GET' ? {} : { body: {} }) })).status, `instructor ${m} ${p}`).toBe(403);
     }
     expect((await call('GET', '/api/instructor/sessions', { token: client.token })).status).toBe(403);
     expect((await call('GET', '/api/instructor/clients?q=ab', { token: client.token })).status).toBe(403);
