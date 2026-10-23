@@ -1,0 +1,52 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend (API)",
+      "presentation": { "hidden": true },
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      // Committed dev keys: a fresh clone runs with no setup.
+      "envFile": "${workspaceFolder}/backend/.env.development",
+      "env": { "NODE_ENV": "development", "PORT": "5080" },
+      "console": "internalConsole",
+      "outputCapture": "std",
+      "autoAttachChildProcesses": true,
+      "killBehavior": "forceful",
+      // Opens Swagger as a tab in your already-running default browser. Swagger's top
+      // bar has a "UI" button that opens the frontend.
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Listening on (https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      }
+    },
+    {
+      // Runs Vite as a debuggee (not a background task) so stopping the session kills
+      // the whole process tree. No browser is opened for it; use Swagger's "UI" button.
+      "name": "UI (vite)",
+      "presentation": { "hidden": true },
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/frontend",
+      "program": "${workspaceFolder}/frontend/node_modules/vite/bin/vite.js",
+      "args": [],
+      "console": "internalConsole",
+      "outputCapture": "std",
+      "autoAttachChildProcesses": false,
+      "killBehavior": "forceful"
+    }
+  ],
+  // Only the compound shows in the Run and Debug dropdown; the single configs are
+  // hidden and exist to be composed here.
+  "compounds": [
+    {
+      "name": "Backend + UI",
+      "configurations": ["Backend (API)", "UI (vite)"],
+      "stopAll": true
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // Run once after cloning (Terminal > Run Task... > backend: install / frontend: install).
+    { "label": "backend: install", "type": "npm", "script": "install", "path": "backend", "problemMatcher": [] },
+    { "label": "frontend: install", "type": "npm", "script": "install", "path": "frontend", "problemMatcher": [] }
+  ]
+}
