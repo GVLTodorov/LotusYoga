@@ -6,6 +6,7 @@
       "presentation": { "hidden": true },
       "type": "node",
       "request": "launch",
+      "preLaunchTask": "infra: db + mailpit",
       "cwd": "${workspaceFolder}/backend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
