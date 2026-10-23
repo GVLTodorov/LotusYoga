@@ -3,27 +3,55 @@ services:
   app:
     build: .
     image: lotusyoga:dev
+    # Dev defaults come from the committed backend/.env.development.
+    # For production-like runs export the variables below (or use a host .env / secrets);
+    # never commit real values.
     env_file: backend/.env.development
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: "5080"
       HOST: 0.0.0.0
-      DATABASE_URL: postgresql://lotus:lotus_dev_password@db:5432/lotusyoga?schema=public
+      STATIC_DIR: /app/public
+      APP_URL: ${APP_URL:-http://localhost:5080}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lotus}:${POSTGRES_PASSWORD:-lotus_dev_password}@db:5432/${POSTGRES_DB:-lotusyoga}?schema=public
+      # Required in production. Override JWT_SECRET, ADMIN_* and SMTP_* from the host/CI secrets.
+      JWT_SECRET: ${JWT_SECRET:-dev-only-jwt-secret-not-for-production-0123456789}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      MAIL_FROM: ${MAIL_FROM:-LotusYoga <no-reply@lotusyoga.local>}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lotusyoga.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin-dev-password-1}
+      JOBS_ENABLED: ${JOBS_ENABLED:-true}
     ports: ["5080:5080"]
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     networks: [lotus]
   db:
     image: postgres:16.4-alpine
     environment:
-      POSTGRES_USER: lotus
-      POSTGRES_PASSWORD: lotus_dev_password
-      POSTGRES_DB: lotusyoga
+      POSTGRES_USER: ${POSTGRES_USER:-lotus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lotus_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-lotusyoga}
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lotus -d lotusyoga"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [lotus]
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["1025:1025", "8025:8025"]
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 5s
       retries: 10
