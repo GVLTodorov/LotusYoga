@@ -12,6 +12,18 @@ https://www.anthropic.com/pricing (a blend of input/output/cache; rough is fine)
 <!-- The brain appends one dated entry per /task below, newest on top:
      a per-sub-agent table and a per-model table. -->
 
+## 2026-10-23 — Mailpit for local VS Code debugging (S)
+
+| Agent | Model | Runs | Tool uses | Tokens | Duration | Est. cost |
+|---|---|---|---|---|---|---|
+| devops | sonnet | 1 | 4 | 35,915 | 26s | $0.13 |
+| **Sub-agents total** | | | | **35,915** | **26s** | **$0.13** |
+
+| Model | Agents | Runs | Tokens | Share of tokens | Est. cost |
+|---|---|---|---|---|---|
+| sonnet | devops | 1 | 35,915 | 100% | $0.13 |
+| **Total** | | **1** | **35,915** | 100% | **$0.13** |
+
 ## 2026-10-23 — Project init (init)
 
 | Agent | Model | Runs | Tool uses | Tokens | Duration | Est. cost |
