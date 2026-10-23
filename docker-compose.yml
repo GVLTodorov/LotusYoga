@@ -5,7 +5,11 @@ services:
     image: lotusyoga:dev
     # Secrets are REQUIRED: compose fails if unset. Provide them in a gitignored .env next to
     # this file (JWT_SECRET, ADMIN_PASSWORD, POSTGRES_PASSWORD, ...) or from host/CI secrets.
-    # Never commit real values. Local dev: docker compose --env-file .env.compose.dev up
+    # Never commit real values. Local dev (adds Mailpit):
+    #   docker compose --env-file .env.compose.dev --profile dev up --build
+    # SMTP_HOST is required (no default) so production cannot silently use the dev mail sink.
+    # TRUST_PROXY=true: set ONLY when running behind a reverse proxy that sets X-Forwarded-For;
+    # otherwise clients could spoof their IP (rate limiting etc.).
     environment:
       NODE_ENV: production
       PORT: "5080"
@@ -15,7 +19,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5080}
       DATABASE_URL: postgresql://${POSTGRES_USER:-lotus}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env next to docker-compose.yml}@db:5432/${POSTGRES_DB:-lotusyoga}?schema=public
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env next to docker-compose.yml}
-      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST in .env next to docker-compose.yml}
       SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
@@ -30,6 +34,7 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+        required: false  # only present with --profile dev
     networks: [lotus]
   db:
     image: postgres:16.4-alpine
@@ -37,7 +42,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-lotus}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env next to docker-compose.yml}
       POSTGRES_DB: ${POSTGRES_DB:-lotusyoga}
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]  # local only; never publish publicly
     # init script creates lotusyoga_test for backend tests; it only runs on a fresh volume
     # (existing volume: docker compose down -v, or create the database manually).
     volumes:
@@ -51,7 +56,8 @@ services:
     networks: [lotus]
   mailpit:
     image: axllent/mailpit:v1.21
-    ports: ["1025:1025", "8025:8025"]
+    profiles: [dev]
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
     healthcheck:
       test: ["CMD", "/mailpit", "readyz"]
       interval: 5s

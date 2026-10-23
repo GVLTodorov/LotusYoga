@@ -15,7 +15,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     services:
       postgres:
         image: postgres:16.4-alpine
@@ -51,14 +51,31 @@ jobs:
         run: npm test --prefix backend -- --coverage --reporter=dot
       - name: Frontend tests
         run: npm test --prefix frontend -- --coverage --reporter=dot
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: |
+            backend/coverage/coverage-summary.json
+            frontend/coverage/coverage-summary.json
+          retention-days: 1
+
+  badges:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage
       - name: Generate coverage badges
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           for p in backend frontend; do
             bash .github/scripts/make-badges.sh "$p/coverage/coverage-summary.json" "badges-out/coverage/$p"
           done
       - name: Publish badges to orphan branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cd badges-out
           git init -q -b badges
@@ -90,7 +107,7 @@ jobs:
           npx --prefix e2e playwright install --with-deps chromium
       - name: Start stack (app + Postgres + Mailpit)
         if: steps.has.outputs.found == 'true'
-        run: docker compose --env-file .env.compose.dev up -d --build --wait
+        run: docker compose --env-file .env.compose.dev --profile dev up -d --build --wait
       - name: Run e2e
         if: steps.has.outputs.found == 'true'
         run: npx --prefix e2e playwright test --reporter=line
@@ -100,7 +117,7 @@ jobs:
           MAILPIT_URL: http://localhost:8025
       - name: Show app logs on failure
         if: failure() && steps.has.outputs.found == 'true'
-        run: docker compose logs app | tail -n 50
+        run: docker compose --env-file .env.compose.dev logs app | tail -n 50
 
   release:
     needs: [test, e2e]
