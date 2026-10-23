@@ -153,7 +153,8 @@ Req `{ status: 'ATTENDED' | 'NO_SHOW' }` → 200 `Attendee`. Allowed from 30 min
 start, only on active bookings. Errors: 403, 404, 409 `ATTENDANCE_WINDOW`, `INVALID_STATE`.
 ### GET /api/instructor/clients?q=… — instructor
 `q` ≥ 2 chars, matches name/email/phone, CLIENT role, not deleted, max 20 →
-200 `[{ id, name, phone, hasValidCard: boolean }]`.
+200 `[{ id, name, phoneHint, hasValidCard: boolean }]`. `phoneHint` = last 3 digits only (e.g. `"•••456"`):
+instructors see full phone numbers only for attendees of their own sessions (security S1).
 ### POST /api/sessions/:id/walk-ins — instructor (own session) or admin
 Req `{ userId }` → 201 `Attendee` (status ATTENDED, walkIn true). Ignores booking window; allowed from
 30 min before start until session end. No email. Errors: 403 (incl. `USER_BLOCKED`), 404, 409 `SESSION_FULL`,
