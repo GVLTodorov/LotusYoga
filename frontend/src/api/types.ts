@@ -127,9 +127,10 @@ export interface InstructorDay {
   attendees: Attendee[];
 }
 export interface ClientHit {
+  // phoneHint: last 3 digits only
   id: string;
   name: string;
-  phone: string;
+  phoneHint: string;
   hasValidCard: boolean;
 }
 export interface AdminUser extends User {

@@ -77,7 +77,7 @@ describe('instructor page', () => {
     mock('INSTRUCTOR', {
       '/api/instructor/sessions': [{ session: makeSession(), attendees: [{ bookingId: 'b1', userId: 'u9', name: 'Петя', phone: '0888 111 222', status: 'BOOKED', walkIn: false }] }],
       '/api/bookings/b1/attendance': { bookingId: 'b1', userId: 'u9', name: 'Петя', phone: '0888 111 222', status: 'ATTENDED', walkIn: false },
-      '/api/instructor/clients': [{ id: 'u5', name: 'Гошо', phone: '0899', hasValidCard: false }],
+      '/api/instructor/clients': [{ id: 'u5', name: 'Гошо', phoneHint: '•••899', hasValidCard: false }],
     }, (u, m) => calls.push(`${m} ${u}`));
     renderApp(<App />, '/today');
     expect(await screen.findByText('Петя')).toBeInTheDocument();

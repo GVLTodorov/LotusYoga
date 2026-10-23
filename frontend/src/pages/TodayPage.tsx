@@ -157,7 +157,7 @@ function WalkInDialog({ sessionId, onClose, onAdded }: { sessionId: string; onCl
             <li key={c.id} className="flex items-center justify-between gap-2 py-2">
               <div className="min-w-0">
                 <p className="font-semibold break-words">{c.name}</p>
-                <p className="text-sm text-slate-600">{c.phone}</p>
+                <p className="text-sm text-slate-600">{c.phoneHint}</p>
                 {!c.hasValidCard && <p className="text-sm font-semibold text-red-700">{t('instr.noCard')}</p>}
               </div>
               <Button onClick={() => add(c)}>{t('instr.add')}</Button>
