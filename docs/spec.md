@@ -118,7 +118,7 @@ Source: `requirements.md`, clarified with the owner on 2026-10-23. API details: 
 ## Admin — monthly overview
 - AC-39 Given a month, then the admin sees: classes held (non-cancelled sessions that started), average
   attendance per held class (attended ÷ held), no-show count and rate (no-shows ÷ (attended + no-shows)),
-  cards sold per type and total.
+  cards sold per type and total (counted by the month the card was recorded, `createdAt`, not `validFrom`).
 
 ## Notifications (email)
 - AC-40 Emails are sent in the recipient's language for: booking confirmation (AC-8, AC-27 excluded),
