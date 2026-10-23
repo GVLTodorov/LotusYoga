@@ -41,6 +41,9 @@ export async function deleteAccount(ctx: Ctx, userId: string) {
   await ctx.prisma.$transaction(async (tx) => {
     const user = await tx.user.findFirst({ where: { id: userId, deletedAt: null } });
     if (!user) throw notFound('User not found');
+    // erase queued / sent mail content addressed to this email (PII)
+    await tx.emailOutbox.deleteMany({ where: { to: user.email, status: 'PENDING' } });
+    await tx.emailOutbox.updateMany({ where: { to: user.email, status: { in: ['SENT', 'FAILED'] } }, data: { to: '', payload: {} } });
     await tx.user.update({
       where: { id: userId },
       data: { name: 'Deleted client', email: `deleted-${userId}@invalid`, phone: '', passwordHash: null, deletedAt: now },

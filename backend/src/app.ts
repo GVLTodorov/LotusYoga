@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
@@ -17,6 +18,13 @@ import { adminRoutes } from './routes/admin.js';
 import { authRoutes } from './routes/auth.js';
 import { clientRoutes } from './routes/client.js';
 import { instructorRoutes } from './routes/instructor.js';
+
+// Strict CSP for the SPA / API: no inline scripts or styles (React style attributes only). Swagger UI needs inline script/style.
+const CSP_APP = [
+  "default-src 'self'", "script-src 'self'", "style-src 'self'", "style-src-attr 'unsafe-inline'", "img-src 'self' data:",
+  "font-src 'self' data:", "connect-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'none'",
+].join('; ');
+const CSP_SWAGGER = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'";
 
 const errorBody = (code: string, message: string, details?: unknown) => ({ error: { code, message, ...(details ? { details } : {}) } });
 
@@ -56,6 +64,10 @@ export async function buildApp(ctx: Ctx, opts: { logger?: boolean } = {}): Promi
     return reply.status(500).send(errorBody('INTERNAL_ERROR', 'Internal server error'));
   });
 
+  await app.register(helmet, { contentSecurityPolicy: false, hsts: config.isProd, crossOriginEmbedderPolicy: false });
+  app.addHook('onRequest', async (req, reply) => {
+    reply.header('Content-Security-Policy', req.url.startsWith('/swagger') ? CSP_SWAGGER : CSP_APP);
+  });
   if (config.corsOrigin.length) await app.register(cors, { origin: config.corsOrigin, methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] });
   await app.register(jwt, { secret: config.jwtSecret, sign: { expiresIn: '30d' } });
   await app.register(rateLimit, {
