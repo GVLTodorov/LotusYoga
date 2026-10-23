@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum Lang {
+  bg
+  en
+}
+
+enum CardType {
+  SINGLE
+  PACK_8
+  PACK_12
+  UNLIMITED_MONTH
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+}
+
+enum SessionStatus {
+  SCHEDULED
+  CANCELLED
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  LATE_CANCELLED
+  ATTENDED
+  NO_SHOW
+  CLASS_CANCELLED
+}
+
+enum WaitlistStatus {
+  WAITING
+  PROMOTED
+  LEFT
+  EXPIRED
+  CLASS_CANCELLED
+}
+
+enum CardEventType {
+  CREATED
+  EXPIRY_CHANGED
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String?
+  name         String
+  phone        String
+  role         Role      @default(CLIENT)
+  lang         Lang      @default(bg)
+  blocked      Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  cards        Card[]
+  bookings     Booking[]
+  waitlist     WaitlistEntry[]
+  taught       ClassSession[]  @relation("Instructor")
+  templates    Template[]
+  cardEvents   CardEvent[]
+
+  @@index([role])
+}
+
+model Template {
+  id           String   @id @default(cuid())
+  name         String
+  instructorId String
+  weekday      Int
+  startTime    String
+  durationMin  Int
+  capacity     Int      @default(14)
+  /// Sofia-local date YYYY-MM-DD
+  validFrom    String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  instructor User           @relation(fields: [instructorId], references: [id])
+  sessions   ClassSession[]
+}
+
+model ClassSession {
+  id             String        @id @default(cuid())
+  templateId     String?
+  /// Sofia-local date of the template occurrence this session was generated for
+  occurrenceDate String?
+  name           String
+  startsAt       DateTime
+  durationMin    Int
+  capacity       Int
+  instructorId   String
+  status         SessionStatus @default(SCHEDULED)
+  cancelReason   String?
+  createdAt      DateTime      @default(now())
+
+  template   Template?       @relation(fields: [templateId], references: [id])
+  instructor User            @relation("Instructor", fields: [instructorId], references: [id])
+  bookings   Booking[]
+  waitlist   WaitlistEntry[]
+
+  @@unique([templateId, occurrenceDate])
+  @@index([startsAt])
+  @@index([instructorId, startsAt])
+}
+
+model Card {
+  id               String        @id @default(cuid())
+  userId           String
+  type             CardType
+  totalClasses     Int?
+  usedClasses      Int           @default(0)
+  /// Sofia-local date YYYY-MM-DD
+  validFrom        String
+  expiresAt        DateTime
+  paymentMethod    PaymentMethod
+  priceBgn         Float?
+  createdAt        DateTime      @default(now())
+  lowAlertSentAt    DateTime?
+  expiryAlertSentAt DateTime?
+
+  user     User        @relation(fields: [userId], references: [id])
+  events   CardEvent[]
+  bookings Booking[]
+
+  @@index([userId, expiresAt])
+}
+
+model CardEvent {
+  id           String        @id @default(cuid())
+  cardId       String
+  type         CardEventType
+  oldExpiresAt DateTime?
+  newExpiresAt DateTime?
+  note         String?
+  byUserId     String
+  createdAt    DateTime      @default(now())
+
+  card   Card @relation(fields: [cardId], references: [id])
+  byUser User @relation(fields: [byUserId], references: [id])
+
+  @@index([cardId])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  userId         String
+  sessionId      String
+  status         BookingStatus @default(BOOKED)
+  walkIn         Boolean       @default(false)
+  promotedLate   Boolean       @default(false)
+  cardId         String?
+  createdAt      DateTime      @default(now())
+  cancelledAt    DateTime?
+  reminderSentAt DateTime?
+
+  user    User         @relation(fields: [userId], references: [id])
+  session ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  card    Card?        @relation(fields: [cardId], references: [id])
+
+  @@index([sessionId, status])
+  @@index([userId, status])
+}
+
+model WaitlistEntry {
+  id        String         @id @default(cuid())
+  userId    String
+  sessionId String
+  status    WaitlistStatus @default(WAITING)
+  createdAt DateTime       @default(now())
+
+  user    User         @relation(fields: [userId], references: [id])
+  session ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, status, createdAt])
+  @@index([userId, status])
+}
+
+model EmailOutbox {
+  id        String      @id @default(cuid())
+  to        String
+  lang      Lang
+  template  String
+  payload   Json
+  status    EmailStatus @default(PENDING)
+  attempts  Int         @default(0)
+  sendAfter DateTime    @default(now())
+  sentAt    DateTime?
+  lastError String?
+  createdAt DateTime    @default(now())
+
+  @@index([status, sendAfter])
+}
