@@ -13,6 +13,8 @@ WORKDIR /backend
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 COPY backend/package.json backend/package-lock.json ./
+# postinstall runs "prisma generate", so the schema must exist before npm ci
+COPY backend/prisma ./prisma
 RUN npm ci --silent
 COPY backend/ ./
 RUN npx prisma generate && npm run build \
