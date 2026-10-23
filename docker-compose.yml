@@ -38,7 +38,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env next to docker-compose.yml}
       POSTGRES_DB: ${POSTGRES_DB:-lotusyoga}
     ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+    # init script creates lotusyoga_test for backend tests; it only runs on a fresh volume
+    # (existing volume: docker compose down -v, or create the database manually).
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./.github/scripts/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lotus -d lotusyoga"]
       interval: 5s
