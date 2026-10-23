@@ -1,0 +1,14 @@
+{
+  "name": "lotusyoga-e2e",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test --reporter=line"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.49.1",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.0"
+  }
+}
