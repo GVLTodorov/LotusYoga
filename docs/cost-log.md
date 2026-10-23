@@ -11,3 +11,15 @@ https://www.anthropic.com/pricing (a blend of input/output/cache; rough is fine)
 
 <!-- The brain appends one dated entry per /task below, newest on top:
      a per-sub-agent table and a per-model table. -->
+
+## 2026-10-23 — Project init (init)
+
+| Agent | Model | Runs | Tool uses | Tokens | Duration | Est. cost |
+|---|---|---|---|---|---|---|
+| devops | sonnet | 1 | 11 | 25,452 | 1m 39s | $0.09 |
+| **Sub-agents total** | | | | **25,452** | **1m 39s** | **$0.09** |
+
+| Model | Agents | Runs | Tokens | Share of tokens | Est. cost |
+|---|---|---|---|---|---|
+| sonnet | devops | 1 | 25,452 | 100% | $0.09 |
+| **Total** | | **1** | **25,452** | 100% | **$0.09** |
