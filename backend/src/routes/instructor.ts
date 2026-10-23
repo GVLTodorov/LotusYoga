@@ -6,6 +6,11 @@ import * as s from '../schemas.js';
 import { addWalkIn, attendeeDto, attendeeSelect, setAttendance } from '../services/booking.js';
 import { endExclusiveOfDay, sofiaDate, startOfDay } from '../time.js';
 
+const phoneHint = (p: string) => {
+  const d = p.replace(/\D/g, '');
+  return d ? `•••${d.slice(-3)}` : '';
+};
+
 export function instructorRoutes(app: FastifyInstance, ctx: Ctx) {
   const { guard } = guards(app, ctx);
   const instructor = guard('instructor');
@@ -54,7 +59,7 @@ export function instructorRoutes(app: FastifyInstance, ctx: Ctx) {
       include: { cards: true },
     });
     const now = ctx.now();
-    return users.map((u) => ({ id: u.id, name: u.name, phone: u.phone, hasValidCard: u.cards.some((c) => isCardActive(c, now)) }));
+    return users.map((u) => ({ id: u.id, name: u.name, phoneHint: phoneHint(u.phone), hasValidCard: u.cards.some((c) => isCardActive(c, now)) }));
   });
 
   app.post('/sessions/:id/walk-ins', { preHandler: instructor }, async (req, reply) => {

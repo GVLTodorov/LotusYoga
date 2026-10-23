@@ -29,6 +29,8 @@ export type PickResult = { cardId: string; unlimited: boolean } | { error: 'NO_V
  */
 export async function pickCard(tx: Tx, userId: string, session: SessionLike, consume: boolean): Promise<PickResult> {
   const date = sofiaDate(session.startsAt);
+  // serialise this client's concurrent bookings so the daily-limit count below cannot race
+  await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
   const cards = await tx.card.findMany({
     where: { userId, validFrom: { lte: date }, expiresAt: { gte: session.startsAt } },
     orderBy: [{ expiresAt: 'asc' }, { createdAt: 'asc' }],

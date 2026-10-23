@@ -187,6 +187,23 @@ describe('DELETE /api/me (AC-5)', () => {
     expect((await env.api().get('/api/me').set(auth)).status).toBe(401);
   });
 
+  it('erases pending mail and blanks sent/failed mail addressed to the user', async () => {
+    const { user, auth } = await mkUser(env, 'CLIENT', { email: 'gone@example.com' });
+    const other = await mkUser(env);
+    const mk = (to: string, status: 'PENDING' | 'SENT' | 'FAILED') =>
+      prisma.emailOutbox.create({ data: { to, lang: 'en', template: 'REMINDER', payload: { name: 'X' }, status } });
+    await mk(user.email, 'PENDING');
+    await mk(user.email, 'SENT');
+    await mk(user.email, 'FAILED');
+    await mk(other.user.email, 'PENDING');
+    expect((await env.api().delete('/api/me').set(auth).send({ password: 'secret123' })).status).toBe(204);
+    const rows = await prisma.emailOutbox.findMany();
+    expect(rows).toHaveLength(3);
+    expect(rows.filter((r) => r.to === user.email)).toHaveLength(0);
+    expect(rows.filter((r) => r.to === '' && JSON.stringify(r.payload) === '{}')).toHaveLength(2);
+    expect(rows.find((r) => r.to === other.user.email)?.status).toBe('PENDING');
+  });
+
   it('frees the spot for the waiting list', async () => {
     const teacher = await mkUser(env, 'INSTRUCTOR');
     const leaver = await mkUser(env);

@@ -365,7 +365,7 @@ const paths: Record<string, Record<string, Json>> = {
       summary: 'Search clients by name / email / phone (min 2 chars, max 20)',
       auth: 'instructor',
       params: [query('q', str, undefined, true)],
-      success: ['200', ok('OK', arr(obj({ id: str, name: str, phone: str, hasValidCard: bool })))],
+      success: ['200', ok('OK', arr(obj({ id: str, name: str, phoneHint: str, hasValidCard: bool })))],
     }),
   },
   '/api/sessions/{id}/walk-ins': {

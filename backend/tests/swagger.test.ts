@@ -43,6 +43,15 @@ describe('swagger', () => {
     expect(res.text).toContain('http://localhost:5173');
   });
 
+  it('sends a strict CSP for the app and a relaxed one for /swagger', async () => {
+    const app = await env.api().get('/health');
+    expect(app.headers['content-security-policy']).toContain("script-src 'self'");
+    expect(app.headers['content-security-policy']).not.toContain("script-src 'self' 'unsafe-inline'");
+    expect(app.headers['x-content-type-options']).toBe('nosniff');
+    const sw = await env.api().get('/swagger');
+    expect(sw.headers['content-security-policy']).toContain("script-src 'self' 'unsafe-inline'");
+  });
+
   it('GET /health', async () => {
     const res = await env.api().get('/health');
     expect(res.status).toBe(200);

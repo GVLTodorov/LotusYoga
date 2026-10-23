@@ -263,6 +263,17 @@ describe('no overbooking under concurrency (AC-14)', () => {
     expect((await prisma.card.findFirstOrThrow()).usedClasses).toBe(1);
   });
 
+  it('two parallel bookings on the same day with an Unlimited card: one success, one DAILY_LIMIT', async () => {
+    const me = await mkUser(env);
+    await mkCard(me.user.id, 'UNLIMITED_MONTH');
+    const a = await mkSession(teacher.user.id, new Date('2026-10-27T06:00:00Z'));
+    const b = await mkSession(teacher.user.id, new Date('2026-10-27T19:30:00Z'));
+    const results = await Promise.all([book(a.id, me.auth), book(b.id, me.auth)]);
+    expect(results.filter((r) => r.status === 201)).toHaveLength(1);
+    expect(results.filter((r) => code(r) === 'DAILY_LIMIT')).toHaveLength(1);
+    expect(await prisma.booking.count({ where: { userId: me.user.id, status: 'BOOKED' } })).toBe(1);
+  });
+
   it('the last class of a card is never spent twice across different sessions', async () => {
     const me = await mkUser(env);
     await mkCard(me.user.id, 'SINGLE');

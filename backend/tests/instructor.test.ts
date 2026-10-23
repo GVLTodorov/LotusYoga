@@ -110,7 +110,7 @@ describe('GET /api/instructor/clients', () => {
     await prisma.user.update({ where: { id: del.user.id }, data: { deletedAt: new Date() } });
     await mkCard(a.user.id);
     const byName = await env.api().get('/api/instructor/clients?q=mari').set(elena.auth);
-    expect(byName.body).toEqual([{ id: a.user.id, name: 'Maria Ivanova', phone: '0888 555 111', hasValidCard: true }]);
+    expect(byName.body).toEqual([{ id: a.user.id, name: 'Maria Ivanova', phoneHint: '•••111', hasValidCard: true }]);
     expect((await env.api().get('/api/instructor/clients?q=0888%205').set(elena.auth)).body).toHaveLength(1);
     expect((await env.api().get('/api/instructor/clients?q=PETAR@X').set(elena.auth)).body[0]).toMatchObject({ name: 'Petar', hasValidCard: false });
     expect((await env.api().get('/api/instructor/clients?q=m').set(elena.auth)).status).toBe(400);
